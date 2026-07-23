@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream-50 text-gray-800 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-hotpink-500 hover:bg-hotpink-600 text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-lavender-200 hover:bg-lavender-300 text-lavender-700 font-semibold py-3 px-6 rounded-2xl transition-all duration-300;
+  }
+
+  .btn-outline {
+    @apply border-2 border-hotpink-400 hover:bg-hotpink-50 text-hotpink-600 font-semibold py-3 px-6 rounded-2xl transition-all duration-300;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl border border-pink-100;
+  }
+
+  .card-hover {
+    @apply hover:-translate-y-2 hover:shadow-2xl;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-pink-200 bg-white focus:outline-none focus:ring-2 focus:ring-hotpink-300 focus:border-hotpink-400 transition-all duration-200 placeholder:text-gray-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  .section-title {
+    @apply font-serif text-3xl md:text-4xl text-gray-800 mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-gray-500 text-lg mb-8;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-hotpink-500 to-rose-400 bg-clip-text text-transparent;
+  }
+
+  .gingham-pattern {
+    background-color: #fff0f6;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 35px,
+        rgba(240, 101, 149, 0.35) 35px,
+        rgba(240, 101, 149, 0.35) 70px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 35px,
+        rgba(240, 101, 149, 0.35) 35px,
+        rgba(240, 101, 149, 0.35) 70px
+      );
+  }
+
+  .grid-pattern {
+    background-image: 
+      linear-gradient(rgba(240, 101, 149, 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240, 101, 149, 0.15) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .hearts-grid-pattern {
+    background-color: #fbb6ce;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cpath d='M0 0h32v32H0z' fill='none' stroke='rgba(190,30,70,0.3)' stroke-width='0.5'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cpath d='M20 18c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M90 45c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M160 25c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M50 80c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M130 70c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M180 90c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M30 130c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M100 120c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M170 140c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M60 170c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M140 180c-2-3-6-3-8 0-2 3 0 7 4 10 4-3 6-7 4-10z' fill='%23a01040'/%3E%3Cpath d='M10 185c-1.5-2.5-5-2.5-6.5 0-1.5 2.5 0 5.5 3.25 8 3.25-2.5 4.75-5.5 3.25-8z' fill='%23a01040'/%3E%3Cpath d='M190 160c-1.5-2.5-5-2.5-6.5 0-1.5 2.5 0 5.5 3.25 8 3.25-2.5 4.75-5.5 3.25-8z' fill='%23a01040'/%3E%3C/svg%3E");
+    background-size: 32px 32px, 200px 200px;
+  }
+
+  .wavy-checker-pattern {
+    background-color: #8faa7b;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%238faa7b'/%3E%3Cpath d='M0 0 C10 5 20 10 25 20 C30 30 25 40 20 50 C15 60 10 65 15 75 C20 85 30 90 35 100 C40 110 35 120 30 130 C25 140 20 145 25 155 C30 165 40 170 45 180 C50 190 45 195 40 200 L0 200Z' fill='%23e8edc8'/%3E%3Cpath d='M50 0 C60 5 70 10 75 20 C80 30 75 40 70 50 C65 60 60 65 65 75 C70 85 80 90 85 100 C90 110 85 120 80 130 C75 140 70 145 75 155 C80 165 90 170 95 180 C100 190 95 195 90 200 L50 200 C45 195 50 190 45 180 C40 170 30 165 25 155 C20 145 25 140 30 130 C35 120 40 110 35 100 C30 90 20 85 15 75 C10 65 15 60 20 50 C25 40 30 30 25 20 C20 10 10 5 0 0Z' fill='%23e8edc8'/%3E%3Cpath d='M100 0 C110 5 120 10 125 20 C130 30 125 40 120 50 C115 60 110 65 115 75 C120 85 130 90 135 100 C140 110 135 120 130 130 C125 140 120 145 125 155 C130 165 140 170 145 180 C150 190 145 195 140 200 L100 200 C95 195 100 190 95 180 C90 170 80 165 75 155 C70 145 75 140 80 130 C85 120 90 110 85 100 C80 90 70 85 65 75 C60 65 65 60 70 50 C75 40 80 30 75 20 C70 10 60 5 50 0Z' fill='%23e8edc8'/%3E%3Cpath d='M150 0 C160 5 170 10 175 20 C180 30 175 40 170 50 C165 60 160 65 165 75 C170 85 180 90 185 100 C190 110 185 120 180 130 C175 140 170 145 175 155 C180 165 190 170 195 180 C200 190 195 195 190 200 L150 200 C145 195 150 190 145 180 C140 170 130 165 125 155 C120 145 125 140 130 130 C135 120 140 110 135 100 C130 90 120 85 115 75 C110 65 115 60 120 50 C125 40 130 30 125 20 C120 10 110 5 100 0Z' fill='%23e8edc8'/%3E%3Cpath d='M200 0 L200 200 L190 200 C195 195 200 190 195 180 C190 170 180 165 175 155 C170 145 175 140 180 130 C185 120 190 110 185 100 C180 90 170 85 165 75 C160 65 165 60 170 50 C175 40 180 30 175 20 C170 10 160 5 150 0Z' fill='%23e8edc8'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff0f6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f06595;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e64980;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
