@@ -94,4 +94,8 @@ public class ProductController {
     public String deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id);
     }
+    @GetMapping("/debug")
+    public String debug() {
+        return "Total Products = " + productService.getAllProductsCount();
+    }
 }

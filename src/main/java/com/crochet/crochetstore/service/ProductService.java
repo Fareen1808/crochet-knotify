@@ -4,6 +4,10 @@ import com.crochet.crochetstore.model.Product;
 import com.crochet.crochetstore.repository.ProductRepository;
 import com.crochet.crochetstore.dto.ProductResponse;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +28,9 @@ public class ProductService {
             LoggerFactory.getLogger(ProductService.class);
 
     private final ProductRepository productRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -181,4 +188,29 @@ public ProductResponse getProducts(
             }
         });
     }
+
+    public String getAllProductsCount() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllProductsCount'");
+    }
+
+    @PostConstruct
+public void debugDatabase() {
+
+    System.out.println("======================================");
+
+    System.out.println("Product Count = " + productRepository.count());
+
+    productRepository.findAll().forEach(product ->
+            System.out.println(product.getId() + " -> " + product.getName())
+    );
+
+    Object database = entityManager
+            .createNativeQuery("SELECT current_database()")
+            .getSingleResult();
+
+    System.out.println("Connected Database = " + database);
+
+    System.out.println("======================================");
+}
 }
