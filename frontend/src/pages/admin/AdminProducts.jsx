@@ -29,15 +29,20 @@ export default function AdminProducts() {
   }, [])
 
   const loadProducts = async () => {
-    try {
-      const data = await productService.getProducts({ size: 100 })
-      setProducts(data.products)
-    } catch {
-      toast.error('Failed to load products')
-    } finally {
-      setIsLoading(false)
-    }
+  try {
+    const data = await productService.getProducts({ size: 100 })
+
+    console.log("Products received:", data.products.length)
+    console.log(data.products)
+
+    setProducts(data.products)
+  } catch (error) {
+    console.error(error)
+    toast.error("Failed to load products")
+  } finally {
+    setIsLoading(false)
   }
+}
 
   const handleOpenModal = (product = null) => {
     if (product) {
@@ -138,7 +143,7 @@ export default function AdminProducts() {
       toast.error('Failed to update stock')
     }
   }
-
+  console.log("Products in state:", products.length);
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -173,6 +178,7 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-pink-50">
+                {console.log(products)}
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-hotpink-50/30 transition-colors">
                     <td className="px-6 py-4">
