@@ -12,6 +12,7 @@ export default function Checkout() {
   const dispatch = useDispatch()
   const { user } = useSelector((state) => state.auth)
   const { items, total } = useSelector((state) => state.cart)
+
   const [isProcessing, setIsProcessing] = useState(false)
   const [address, setAddress] = useState({
     fullName: '',
@@ -28,8 +29,75 @@ export default function Checkout() {
     }
   }, [dispatch, user])
 
+  useEffect(() => {
+    if (address.pincode.length !== 6) {
+      setAddress((prev) => ({
+        ...prev,
+        city: '',
+        state: '',
+      }))
+      return
+    }
+
+    const fetchLocation = async () => {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${address.pincode}`)
+        const data = await res.json()
+
+        if (data?.[0]?.Status === 'Success' && data?.[0]?.PostOffice?.length > 0) {
+          setAddress((prev) => ({
+            ...prev,
+            city: data[0].PostOffice[0].District,
+            state: data[0].PostOffice[0].State,
+          }))
+        } else {
+          setAddress((prev) => ({
+            ...prev,
+            city: '',
+            state: '',
+          }))
+          toast.error('Invalid pincode')
+        }
+      } catch (error) {
+        setAddress((prev) => ({
+          ...prev,
+          city: '',
+          state: '',
+        }))
+        toast.error('Unable to fetch location')
+      }
+    }
+
+    fetchLocation()
+  }, [address.pincode])
+
   const handleInputChange = (e) => {
-    setAddress({ ...address, [e.target.name]: e.target.value })
+    let { name, value } = e.target
+
+    if (name === 'fullName') {
+      value = value.replace(/[^a-zA-Z ]/g, '')
+    }
+
+    if (name === 'phone') {
+      value = value.replace(/\D/g, '').slice(0, 10)
+    }
+
+    if (name === 'street') {
+      value = value
+    }
+
+    if (name === 'city' || name === 'state') {
+      return
+    }
+
+    if (name === 'pincode') {
+      value = value.replace(/\D/g, '').slice(0, 6)
+    }
+
+    setAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
   const loadRazorpayScript = () => {
@@ -43,15 +111,41 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
-    if (!address.fullName || !address.phone || !address.street || !address.city || !address.state || !address.pincode) {
+    if (
+      !address.fullName.trim() ||
+      !address.phone.trim() ||
+      !address.street.trim() ||
+      !address.city.trim() ||
+      !address.state.trim() ||
+      !address.pincode.trim()
+    ) {
       toast.error('Please fill in all address fields')
+      return
+    }
+
+    if (address.fullName.trim().length < 3) {
+      toast.error('Enter a valid full name')
+      return
+    }
+
+    if (!/^[6-9]\d{9}$/.test(address.phone)) {
+      toast.error('Enter a valid 10-digit mobile number')
+      return
+    }
+
+    if (!/^\d{6}$/.test(address.pincode)) {
+      toast.error('Enter a valid 6-digit pincode')
+      return
+    }
+
+    if (address.street.trim().length < 10) {
+      toast.error('Please enter a complete address')
       return
     }
 
     setIsProcessing(true)
 
     try {
-      // Load Razorpay script
       const scriptLoaded = await loadRazorpayScript()
       if (!scriptLoaded) {
         toast.error('Failed to load payment gateway')
@@ -59,7 +153,6 @@ export default function Checkout() {
         return
       }
 
-      // Create Razorpay order
       const razorpayOrderId = await paymentService.createOrder(total)
 
       const options = {
@@ -71,16 +164,14 @@ export default function Checkout() {
         order_id: razorpayOrderId,
         handler: async (response) => {
           try {
-            // Verify payment
             await paymentService.verifyPayment(
               response.razorpay_order_id,
               response.razorpay_payment_id,
               response.razorpay_signature
             )
 
-            // Create order
             await orderService.checkout(user.username)
-            
+
             dispatch(clearCart())
             toast.success('Order placed successfully! 🎉')
             navigate('/payment-success')
@@ -112,11 +203,10 @@ export default function Checkout() {
       <h1 className="font-serif text-3xl text-gray-800 mb-8">Checkout 💝</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Address Form */}
         <div className="lg:col-span-2">
           <div className="card">
             <h3 className="font-serif text-lg text-gray-800 mb-6">Shipping Address</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">Full Name</label>
@@ -127,12 +217,16 @@ export default function Checkout() {
                   onChange={handleInputChange}
                   className="input-field"
                   placeholder="Your full name"
+                  maxLength={50}
                 />
               </div>
+
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">Phone Number</label>
                 <input
                   type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   name="phone"
                   value={address.phone}
                   onChange={handleInputChange}
@@ -140,6 +234,7 @@ export default function Checkout() {
                   placeholder="10-digit phone number"
                 />
               </div>
+
               <div className="md:col-span-2">
                 <label className="block text-sm text-gray-600 mb-1.5">Street Address</label>
                 <input
@@ -151,28 +246,31 @@ export default function Checkout() {
                   placeholder="House no., Street, Area"
                 />
               </div>
+
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">City</label>
                 <input
                   type="text"
                   name="city"
                   value={address.city}
-                  onChange={handleInputChange}
-                  className="input-field"
+                  readOnly
+                  className="input-field bg-gray-100 cursor-not-allowed"
                   placeholder="City"
                 />
               </div>
+
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">State</label>
                 <input
                   type="text"
                   name="state"
                   value={address.state}
-                  onChange={handleInputChange}
-                  className="input-field"
+                  readOnly
+                  className="input-field bg-gray-100 cursor-not-allowed"
                   placeholder="State"
                 />
               </div>
+
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">Pincode</label>
                 <input
@@ -180,6 +278,8 @@ export default function Checkout() {
                   name="pincode"
                   value={address.pincode}
                   onChange={handleInputChange}
+                  inputMode="numeric"
+                  maxLength={6}
                   className="input-field"
                   placeholder="6-digit pincode"
                 />
@@ -188,11 +288,10 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="card sticky top-24">
             <h3 className="font-serif text-lg text-gray-800 mb-4">Order Summary</h3>
-            
+
             <div className="space-y-3 mb-4">
               {items.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
