@@ -14,12 +14,29 @@ export default function Checkout() {
   const { items, total } = useSelector((state) => state.cart)
 
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false)
   const [address, setAddress] = useState({
     fullName: '',
     phone: '',
     street: '',
+    pincode: '',
     city: '',
     state: '',
+  })
+
+  // Track which fields have been touched, so we don't show errors before the user interacts
+  const [touched, setTouched] = useState({
+    fullName: false,
+    phone: false,
+    street: false,
+    pincode: false,
+  })
+
+  // Field-level error messages
+  const [errors, setErrors] = useState({
+    fullName: '',
+    phone: '',
+    street: '',
     pincode: '',
   })
 
@@ -29,6 +46,31 @@ export default function Checkout() {
     }
   }, [dispatch, user])
 
+  // Validate a single field and return an error message (empty string = valid)
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'fullName':
+        if (!value.trim()) return 'Full name is required'
+        if (value.trim().length < 3) return 'Enter a valid full name'
+        return ''
+      case 'phone':
+        if (!value.trim()) return 'Phone number is required'
+        if (!/^[6-9]\d{9}$/.test(value)) return 'Enter a valid 10-digit mobile number'
+        return ''
+      case 'street':
+        if (!value.trim()) return 'Street address is required'
+        if (value.trim().length < 10) return 'Please enter a complete address'
+        return ''
+      case 'pincode':
+        if (!value.trim()) return 'Pincode is required'
+        if (!/^\d{6}$/.test(value)) return 'Enter a valid 6-digit pincode'
+        return ''
+      default:
+        return ''
+    }
+  }
+
+  // Auto-fetch city/state whenever pincode changes and is 6 digits
   useEffect(() => {
     if (address.pincode.length !== 6) {
       setAddress((prev) => ({
@@ -40,6 +82,7 @@ export default function Checkout() {
     }
 
     const fetchLocation = async () => {
+      setIsFetchingPincode(true)
       try {
         const res = await fetch(`https://api.postalpincode.in/pincode/${address.pincode}`)
         const data = await res.json()
@@ -50,12 +93,14 @@ export default function Checkout() {
             city: data[0].PostOffice[0].District,
             state: data[0].PostOffice[0].State,
           }))
+          setErrors((prev) => ({ ...prev, pincode: '' }))
         } else {
           setAddress((prev) => ({
             ...prev,
             city: '',
             state: '',
           }))
+          setErrors((prev) => ({ ...prev, pincode: 'Invalid pincode' }))
           toast.error('Invalid pincode')
         }
       } catch (error) {
@@ -64,7 +109,10 @@ export default function Checkout() {
           city: '',
           state: '',
         }))
+        setErrors((prev) => ({ ...prev, pincode: 'Unable to fetch location' }))
         toast.error('Unable to fetch location')
+      } finally {
+        setIsFetchingPincode(false)
       }
     }
 
@@ -82,10 +130,6 @@ export default function Checkout() {
       value = value.replace(/\D/g, '').slice(0, 10)
     }
 
-    if (name === 'street') {
-      value = value
-    }
-
     if (name === 'city' || name === 'state') {
       return
     }
@@ -98,6 +142,17 @@ export default function Checkout() {
       ...prev,
       [name]: value,
     }))
+
+    // Live-validate as the user types, but only surface it if the field was already touched
+    if (touched[name]) {
+      setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }))
+    }
+  }
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }))
   }
 
   const loadRazorpayScript = () => {
@@ -111,35 +166,27 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
-    if (
-      !address.fullName.trim() ||
-      !address.phone.trim() ||
-      !address.street.trim() ||
-      !address.city.trim() ||
-      !address.state.trim() ||
-      !address.pincode.trim()
-    ) {
-      toast.error('Please fill in all address fields')
+    // Validate every field at once and mark all as touched so errors render
+    const fieldNames = ['fullName', 'phone', 'street', 'pincode']
+    const newErrors = {}
+    fieldNames.forEach((name) => {
+      newErrors[name] = validateField(name, address[name])
+    })
+    setErrors((prev) => ({ ...prev, ...newErrors }))
+    setTouched((prev) => {
+      const next = { ...prev }
+      fieldNames.forEach((name) => (next[name] = true))
+      return next
+    })
+
+    const hasErrors = Object.values(newErrors).some((msg) => msg !== '')
+    if (hasErrors) {
+      toast.error('Please fix the highlighted fields')
       return
     }
 
-    if (address.fullName.trim().length < 3) {
-      toast.error('Enter a valid full name')
-      return
-    }
-
-    if (!/^[6-9]\d{9}$/.test(address.phone)) {
-      toast.error('Enter a valid 10-digit mobile number')
-      return
-    }
-
-    if (!/^\d{6}$/.test(address.pincode)) {
-      toast.error('Enter a valid 6-digit pincode')
-      return
-    }
-
-    if (address.street.trim().length < 10) {
-      toast.error('Please enter a complete address')
+    if (!address.city.trim() || !address.state.trim()) {
+      toast.error('Please enter a valid pincode to auto-fill city and state')
       return
     }
 
@@ -198,6 +245,14 @@ export default function Checkout() {
     }
   }
 
+  // Helper to build input classes based on error state
+  const inputClass = (name) =>
+    `input-field ${
+      touched[name] && errors[name]
+        ? 'border-2 border-red-400 ring-2 ring-red-100 focus:border-red-500 focus:ring-red-200'
+        : ''
+    }`
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="font-serif text-3xl text-gray-800 mb-8">Checkout 💝</h1>
@@ -215,10 +270,14 @@ export default function Checkout() {
                   name="fullName"
                   value={address.fullName}
                   onChange={handleInputChange}
-                  className="input-field"
+                  onBlur={handleBlur}
+                  className={inputClass('fullName')}
                   placeholder="Your full name"
                   maxLength={50}
                 />
+                {touched.fullName && errors.fullName && (
+                  <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>
+                )}
               </div>
 
               <div>
@@ -230,9 +289,13 @@ export default function Checkout() {
                   name="phone"
                   value={address.phone}
                   onChange={handleInputChange}
-                  className="input-field"
+                  onBlur={handleBlur}
+                  className={inputClass('phone')}
                   placeholder="10-digit phone number"
                 />
+                {touched.phone && errors.phone && (
+                  <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+                )}
               </div>
 
               <div className="md:col-span-2">
@@ -242,10 +305,38 @@ export default function Checkout() {
                   name="street"
                   value={address.street}
                   onChange={handleInputChange}
-                  className="input-field"
+                  onBlur={handleBlur}
+                  className={inputClass('street')}
                   placeholder="House no., Street, Area"
                 />
+                {touched.street && errors.street && (
+                  <p className="text-xs text-red-500 mt-1">{errors.street}</p>
+                )}
               </div>
+
+              {/* Pincode now comes first, so entering it auto-fills City/State below */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1.5">Pincode</label>
+                <input
+                  type="text"
+                  name="pincode"
+                  value={address.pincode}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  inputMode="numeric"
+                  maxLength={6}
+                  className={inputClass('pincode')}
+                  placeholder="6-digit pincode"
+                />
+                {touched.pincode && errors.pincode && (
+                  <p className="text-xs text-red-500 mt-1">{errors.pincode}</p>
+                )}
+                {isFetchingPincode && (
+                  <p className="text-xs text-gray-400 mt-1">Looking up city and state…</p>
+                )}
+              </div>
+
+              <div />
 
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">City</label>
@@ -255,7 +346,7 @@ export default function Checkout() {
                   value={address.city}
                   readOnly
                   className="input-field bg-gray-100 cursor-not-allowed"
-                  placeholder="City"
+                  placeholder="Auto-filled from pincode"
                 />
               </div>
 
@@ -267,21 +358,7 @@ export default function Checkout() {
                   value={address.state}
                   readOnly
                   className="input-field bg-gray-100 cursor-not-allowed"
-                  placeholder="State"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-600 mb-1.5">Pincode</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={address.pincode}
-                  onChange={handleInputChange}
-                  inputMode="numeric"
-                  maxLength={6}
-                  className="input-field"
-                  placeholder="6-digit pincode"
+                  placeholder="Auto-filled from pincode"
                 />
               </div>
             </div>
