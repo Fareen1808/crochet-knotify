@@ -19,12 +19,30 @@ public class User {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$",
-            message = "Password must include uppercase, lowercase, number, and special character"
-    )
-    private String password;
+
+@Size(min = 8, message = "Password must be at least 8 characters")
+
+@Pattern(
+        regexp = ".*[A-Z].*",
+        message = "Password must contain at least one uppercase letter"
+)
+
+@Pattern(
+        regexp = ".*[a-z].*",
+        message = "Password must contain at least one lowercase letter"
+)
+
+@Pattern(
+        regexp = ".*\\d.*",
+        message = "Password must contain at least one number"
+)
+
+@Pattern(
+        regexp = ".*[^A-Za-z0-9].*",
+        message = "Password must contain at least one special character"
+)
+
+private String password;
 
     private String role; // USER or ADMIN
 
