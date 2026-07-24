@@ -21,19 +21,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByPriceLessThanEqual(double price, Pageable pageable);
     Page<Product> findByCategoryAndPriceLessThanEqual(String category, double price, Pageable pageable);
 
-    @Query("""
-            select p from Product p
-            where (:category is null or lower(p.category) = lower(:category))
-              and (:minPrice is null or p.price >= :minPrice)
-              and (:maxPrice is null or p.price <= :maxPrice)
-            """)
-    Page<Product> findByFilters(
-            @Param("category") String category,
-            @Param("minPrice") Double minPrice,
-            @Param("maxPrice") Double maxPrice,
-            Pageable pageable
-    );
-
     Page<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
             String name,
             String description,

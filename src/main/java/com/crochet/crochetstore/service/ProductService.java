@@ -102,17 +102,52 @@ public class ProductService {
 
     // PAGINATION + FILTER + DTO
     @Cacheable(value = "products", key = "#category + ':' + #minPrice + ':' + #maxPrice + ':' + #pageable")
-    public ProductResponse getProducts(String category, Double minPrice, Double maxPrice, Pageable pageable) {
-        validateFilters(minPrice, maxPrice, pageable);
-        Page<Product> page = productRepository.findByFilters(category, minPrice, maxPrice, pageable);
+public ProductResponse getProducts(
+        String category,
+        Double minPrice,
+        Double maxPrice,
+        Pageable pageable
+) {
 
-        return new ProductResponse(
-                page.getContent(),
-                page.getNumber(),
-                page.getTotalPages(),
-                page.getTotalElements()
+    validateFilters(minPrice, maxPrice, pageable);
+
+    Page<Product> page;
+
+    if (category != null && !category.isBlank()) {
+
+        if (maxPrice != null) {
+            page = productRepository.findByCategoryAndPriceLessThanEqual(
+                    category.trim(),
+                    maxPrice,
+                    pageable
+            );
+        } else {
+            page = productRepository.findByCategory(
+                    category.trim(),
+                    pageable
+            );
+        }
+
+    } else if (maxPrice != null) {
+
+        page = productRepository.findByPriceLessThanEqual(
+                maxPrice,
+                pageable
         );
+
+    } else {
+
+        page = productRepository.findAll(pageable);
+
     }
+
+    return new ProductResponse(
+            page.getContent(),
+            page.getNumber(),
+            page.getTotalPages(),
+            page.getTotalElements()
+    );
+}
 
     @Cacheable(value = "productSearch", key = "#keyword + ':' + #pageable")
     public ProductResponse searchProducts(String keyword, Pageable pageable) {
