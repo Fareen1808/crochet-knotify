@@ -4,10 +4,6 @@ import com.crochet.crochetstore.model.Product;
 import com.crochet.crochetstore.repository.ProductRepository;
 import com.crochet.crochetstore.dto.ProductResponse;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +25,6 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -108,7 +102,7 @@ public class ProductService {
     }
 
     // PAGINATION + FILTER + DTO
-    @Cacheable(value = "products", key = "#category + ':' + #minPrice + ':' + #maxPrice + ':' + #pageable")
+@Cacheable(value = "products", key = "#category + ':' + #minPrice + ':' + #maxPrice + ':' + #pageable")
 public ProductResponse getProducts(
         String category,
         Double minPrice,
@@ -120,32 +114,73 @@ public ProductResponse getProducts(
 
     Page<Product> page;
 
-    if (category != null && !category.isBlank()) {
+    boolean hasCategory = category != null && !category.isBlank();
 
-        if (maxPrice != null) {
-            page = productRepository.findByCategoryAndPriceLessThanEqual(
-                    category.trim(),
+    if (hasCategory) {
+
+        category = category.trim();
+
+        if (minPrice != null && maxPrice != null) {
+
+            page = productRepository.findByCategoryAndPriceBetween(
+                    category,
+                    minPrice,
                     maxPrice,
                     pageable
             );
+
+        } else if (minPrice != null) {
+
+            page = productRepository.findByCategoryAndPriceGreaterThanEqual(
+                    category,
+                    minPrice,
+                    pageable
+            );
+
+        } else if (maxPrice != null) {
+
+            page = productRepository.findByCategoryAndPriceLessThanEqual(
+                    category,
+                    maxPrice,
+                    pageable
+            );
+
         } else {
+
             page = productRepository.findByCategory(
-                    category.trim(),
+                    category,
                     pageable
             );
         }
 
-    } else if (maxPrice != null) {
-
-        page = productRepository.findByPriceLessThanEqual(
-                maxPrice,
-                pageable
-        );
-
     } else {
 
-        page = productRepository.findAll(pageable);
+        if (minPrice != null && maxPrice != null) {
 
+            page = productRepository.findByPriceBetween(
+                    minPrice,
+                    maxPrice,
+                    pageable
+            );
+
+        } else if (minPrice != null) {
+
+            page = productRepository.findByPriceGreaterThanEqual(
+                    minPrice,
+                    pageable
+            );
+
+        } else if (maxPrice != null) {
+
+            page = productRepository.findByPriceLessThanEqual(
+                    maxPrice,
+                    pageable
+            );
+
+        } else {
+
+            page = productRepository.findAll(pageable);
+        }
     }
 
     return new ProductResponse(
@@ -189,28 +224,4 @@ public ProductResponse getProducts(
         });
     }
 
-    public String getAllProductsCount() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllProductsCount'");
-    }
-
-    @PostConstruct
-public void debugDatabase() {
-
-    System.out.println("======================================");
-
-    System.out.println("Product Count = " + productRepository.count());
-
-    productRepository.findAll().forEach(product ->
-            System.out.println(product.getId() + " -> " + product.getName())
-    );
-
-    Object database = entityManager
-            .createNativeQuery("SELECT current_database()")
-            .getSingleResult();
-
-    System.out.println("Connected Database = " + database);
-
-    System.out.println("======================================");
-}
 }

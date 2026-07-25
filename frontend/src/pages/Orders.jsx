@@ -12,7 +12,7 @@ export default function Orders() {
 
   useEffect(() => {
     if (user) {
-      orderService.getOrders(user.username)
+      orderService.getOrders()
         .then((data) => {
           setOrders(data)
           setIsLoading(false)

@@ -24,23 +24,35 @@ export default function ProductDetail() {
   }, [dispatch, id])
 
   const handleAddToCart = () => {
-    if (!user) {
-      toast.error('Please login to add items to cart')
-      return
-    }
-    if (currentProduct.stock !== undefined && currentProduct.stock <= 0) {
-      toast.error('This item is out of stock')
-      return
-    }
-    dispatch(addToCart({ username: user.username, productId: currentProduct.id, quantity }))
-      .unwrap()
-      .then(() => {
-        toast.success('Added to cart! 🧶')
-      })
-      .catch((err) => {
-        toast.error(err || 'Failed to add to cart')
-      })
+  if (!user) {
+    toast.error("Please login to continue")
+    return
   }
+
+  if (currentProduct.stock <= 0) {
+    toast.error("This product is out of stock")
+    return
+  }
+
+  if (quantity > currentProduct.stock) {
+    toast.error(`Only ${currentProduct.stock} item(s) available`)
+    return
+  }
+
+  dispatch(
+    addToCart({
+      productId: currentProduct.id,
+      quantity,
+    })
+  )
+    .unwrap()
+    .then(() => {
+      toast.success("Added to cart 🧶")
+    })
+    .catch((err) => {
+      toast.error(err || "Failed to add to cart")
+    })
+}
 
   if (isLoading || !currentProduct) {
     return (
@@ -117,12 +129,18 @@ export default function ProductDetail() {
               {formatPrice(currentProduct.price)}
             </span>
             {isOutOfStock ? (
-              <span className="badge bg-red-100 text-red-600 font-bold">Out of Stock</span>
-            ) : isLowStock ? (
-              <span className="badge bg-yellow-100 text-yellow-700 font-bold">Only {currentProduct.stock} left!</span>
-            ) : (
-              <span className="badge bg-sage-100 text-sage-700 font-bold">In Stock ({currentProduct.stock})</span>
-            )}
+  <span className="badge bg-red-100 text-red-600 font-bold">
+    Out of Stock
+  </span>
+) : isLowStock ? (
+  <span className="badge bg-yellow-100 text-yellow-700 font-bold">
+    Only {currentProduct.stock} left
+  </span>
+) : (
+  <span className="badge bg-green-100 text-green-700 font-bold">
+    In Stock ({currentProduct.stock})
+  </span>
+)}
           </div>
 
           <p className="text-gray-500 leading-relaxed mb-8">
@@ -155,7 +173,7 @@ export default function ProductDetail() {
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="p-3 hover:bg-hotpink-50 transition-colors"
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || quantity >= currentProduct.stock}
               >
                 <HiOutlineMinus className="w-4 h-4" />
               </button>
@@ -163,9 +181,15 @@ export default function ProductDetail() {
                 {quantity}
               </span>
               <button
-                onClick={() => setQuantity(Math.min(currentProduct.stock || 99, quantity + 1))}
+                onClick={() => {
+  if (quantity >= currentProduct.stock) {
+    toast.error(`Only ${currentProduct.stock} item(s) available`)
+    return
+  }
+  setQuantity(quantity + 1)
+}}
                 className="p-3 hover:bg-hotpink-50 transition-colors"
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || quantity >= currentProduct.stock}
               >
                 <HiOutlinePlus className="w-4 h-4" />
               </button>
@@ -173,11 +197,13 @@ export default function ProductDetail() {
 
             <button
               onClick={handleAddToCart}
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || quantity >= currentProduct.stock}
               className="btn-primary flex items-center gap-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
               <HiOutlineShoppingBag className="w-5 h-5" />
-              {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+              {isOutOfStock
+  ? "Out of Stock"
+  : `Add ${quantity} to Cart`}
             </button>
 
             <button className="p-3 border-2 border-pink-200 rounded-xl hover:bg-hotpink-50 transition-colors">

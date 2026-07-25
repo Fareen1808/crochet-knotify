@@ -1,25 +1,33 @@
 import API from './api'
 
 const cartService = {
-  getCart: async (username) => {
-    const response = await API.get(`/cart/${username}`)
+  // Get logged-in user's cart
+  getCart: async () => {
+    const response = await API.get('/cart')
     return response.data
   },
 
-  addToCart: async (username, productId, quantity) => {
-    const response = await API.post(
-      `/cart/add?username=${encodeURIComponent(username)}&productId=${productId}&quantity=${quantity}`
-    )
+  // Add product to logged-in user's cart
+  addToCart: async (productId, quantity) => {
+    const response = await API.post('/cart/add', null, {
+      params: {
+        productId,
+        quantity,
+      },
+    })
+
     return response.data
   },
 
+  // Remove cart item
   removeItem: async (cartItemId) => {
     const response = await API.delete(`/cart/remove/${cartItemId}`)
     return response.data
   },
 
-  getTotal: async (username) => {
-    const response = await API.get(`/cart/${username}/total`)
+  // Get logged-in user's cart total
+  getTotal: async () => {
+    const response = await API.get('/cart/total')
     return response.data
   },
 }

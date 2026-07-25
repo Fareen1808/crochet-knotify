@@ -3,7 +3,7 @@ package com.crochet.crochetstore.controller;
 import com.crochet.crochetstore.model.Order;
 import com.crochet.crochetstore.repository.OrderRepository;
 import com.crochet.crochetstore.service.OrderService;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,25 +17,24 @@ public class OrderController {
 
     public OrderController(OrderService orderService,
                            OrderRepository orderRepository) {
-
         this.orderService = orderService;
         this.orderRepository = orderRepository;
     }
 
-    // ✅ CHECKOUT
+    // CHECKOUT
     @PostMapping("/checkout")
-    public Order checkout(
-            @RequestParam String username
-    ) {
+    public Order checkout(Authentication authentication) {
+
+        String username = authentication.getName();
 
         return orderService.checkout(username);
     }
 
-    // ✅ ORDER HISTORY
-    @GetMapping("/{username}")
-    public List<Order> getOrders(
-            @PathVariable String username
-    ) {
+    // ORDER HISTORY
+    @GetMapping
+    public List<Order> getOrders(Authentication authentication) {
+
+        String username = authentication.getName();
 
         return orderRepository.findByUsername(username);
     }

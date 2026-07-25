@@ -56,7 +56,15 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public APIs
+                        // =====================================
+                        // ADMIN APIs (Must come BEFORE public)
+                        // =====================================
+                        .requestMatchers("/products/admin/**")
+                        .hasRole("ADMIN")
+
+                        // =====================================
+                        // PUBLIC APIs
+                        // =====================================
                         .requestMatchers(
                                 "/auth/**",
                                 "/products/**",
@@ -65,19 +73,26 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // Authenticated APIs
-                        .requestMatchers("/cart/**").authenticated()
-                        .requestMatchers("/orders/**").authenticated()
-                        .requestMatchers("/payment/**").authenticated()
+                        // =====================================
+                        // AUTHENTICATED APIs
+                        // =====================================
+                        .requestMatchers("/cart/**")
+                        .authenticated()
 
-                        // Admin APIs
-                        .requestMatchers("/products/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/orders/**")
+                        .authenticated()
 
-                        .anyRequest().authenticated()
+                        .requestMatchers("/payment/**")
+                        .authenticated()
+
+                        .anyRequest()
+                        .authenticated()
                 )
 
-                .addFilterBefore(jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }

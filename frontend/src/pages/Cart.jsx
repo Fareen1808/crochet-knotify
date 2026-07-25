@@ -16,8 +16,8 @@ export default function Cart() {
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchCart(user.username))
-      dispatch(fetchCartTotal(user.username))
+      dispatch(fetchCart())
+      dispatch(fetchCartTotal())
     }
   }, [dispatch, user])
 
@@ -26,7 +26,7 @@ export default function Cart() {
       .unwrap()
       .then(() => {
         toast.success('Item removed from cart')
-        dispatch(fetchCartTotal(user.username))
+        dispatch(fetchCartTotal())
       })
       .catch(() => {
         toast.error('Failed to remove item')

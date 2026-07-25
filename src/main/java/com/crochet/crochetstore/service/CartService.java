@@ -38,20 +38,40 @@ public class CartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() ->
                         new RuntimeException("Product not found"));
+                        if (quantity <= 0) {
+    throw new RuntimeException("Quantity must be greater than zero");
+}
 
-        // CREATE CART ITEM
-        CartItem item = new CartItem();
+if (product.getStock() < quantity) {
+    throw new RuntimeException(
+            "Only " + product.getStock() + " item(s) available in stock."
+    );
+}
+        // CHECK IF PRODUCT ALREADY EXISTS IN CART
+CartItem item = cartItemRepository
+        .findByCartAndProduct(cart, product)
+        .orElse(null);
 
-        item.setProduct(product);
-        item.setQuantity(quantity);
-        item.setCart(cart);
+if (item != null) {
 
-        // SAVE ITEM
-        cart.getItems().add(item);
+    item.setQuantity(item.getQuantity() + quantity);
 
-        cartItemRepository.save(item);
+    cartItemRepository.save(item);
 
-        return cartRepository.save(cart);
+} else {
+
+    item = new CartItem();
+
+    item.setProduct(product);
+    item.setQuantity(quantity);
+    item.setCart(cart);
+
+    cart.getItems().add(item);
+
+    cartItemRepository.save(item);
+}
+
+return cartRepository.save(cart);
     }
 
     // ✅ VIEW CART

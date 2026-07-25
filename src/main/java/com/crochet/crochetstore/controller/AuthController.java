@@ -2,10 +2,16 @@ package com.crochet.crochetstore.controller;
 
 import com.crochet.crochetstore.model.User;
 import com.crochet.crochetstore.service.AuthService;
+import com.crochet.crochetstore.dto.RegisterRequest;
 import com.crochet.crochetstore.dto.TokenResponse;
 
-import org.springframework.web.bind.annotation.*;
+
+import com.crochet.crochetstore.dto.RegisterRequest;
 import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -18,9 +24,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@Valid @RequestBody User user) {
-        return authService.register(user);
-    }
+public ResponseEntity<?> register(
+        @Valid @RequestBody RegisterRequest request) {
+
+    authService.register(request);
+
+    return ResponseEntity.ok("User registered successfully");
+}
 
     @PostMapping("/login")
     public String login(@RequestParam String username,

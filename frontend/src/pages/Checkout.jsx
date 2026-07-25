@@ -42,7 +42,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchCartTotal(user.username))
+      dispatch(fetchCartTotal())
     }
   }, [dispatch, user])
 
@@ -217,7 +217,7 @@ export default function Checkout() {
               response.razorpay_signature
             )
 
-            await orderService.checkout(user.username)
+            await orderService.checkout()
 
             dispatch(clearCart())
             toast.success('Order placed successfully! 🎉')

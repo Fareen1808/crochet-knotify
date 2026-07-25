@@ -2,7 +2,7 @@ package com.crochet.crochetstore.controller;
 
 import com.crochet.crochetstore.model.Cart;
 import com.crochet.crochetstore.service.CartService;
-
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,13 +15,15 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    // ✅ ADD TO CART
+    // ADD TO CART
     @PostMapping("/add")
     public Cart addToCart(
-            @RequestParam String username,
+            Authentication authentication,
             @RequestParam Long productId,
             @RequestParam int quantity
     ) {
+
+        String username = authentication.getName();
 
         return cartService.addToCart(
                 username,
@@ -30,27 +32,27 @@ public class CartController {
         );
     }
 
-    // ✅ VIEW CART
-    @GetMapping("/{username}")
-    public Cart getCart(@PathVariable String username) {
+    // VIEW CART
+    @GetMapping
+    public Cart getCart(Authentication authentication) {
+
+        String username = authentication.getName();
 
         return cartService.getCart(username);
     }
 
-    // ✅ REMOVE ITEM
+    // REMOVE ITEM
     @DeleteMapping("/remove/{cartItemId}")
-    public String removeItem(
-            @PathVariable Long cartItemId
-    ) {
+    public String removeItem(@PathVariable Long cartItemId) {
 
         return cartService.removeItem(cartItemId);
     }
 
-    // ✅ TOTAL PRICE
-    @GetMapping("/{username}/total")
-    public double calculateTotal(
-            @PathVariable String username
-    ) {
+    // CART TOTAL
+    @GetMapping("/total")
+    public double calculateTotal(Authentication authentication) {
+
+        String username = authentication.getName();
 
         return cartService.calculateTotal(username);
     }
