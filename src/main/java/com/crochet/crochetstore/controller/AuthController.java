@@ -1,12 +1,9 @@
 package com.crochet.crochetstore.controller;
 
-import com.crochet.crochetstore.model.User;
 import com.crochet.crochetstore.service.AuthService;
 import com.crochet.crochetstore.dto.RegisterRequest;
 import com.crochet.crochetstore.dto.TokenResponse;
 
-
-import com.crochet.crochetstore.dto.RegisterRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;

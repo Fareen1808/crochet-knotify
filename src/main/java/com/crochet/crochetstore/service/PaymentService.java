@@ -2,13 +2,12 @@ package com.crochet.crochetstore.service;
 
 import com.crochet.crochetstore.model.Payment;
 import com.crochet.crochetstore.repository.PaymentRepository;
-
-import com.razorpay.*;
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
-
 import org.json.JSONObject;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PaymentService {
@@ -25,34 +24,37 @@ public class PaymentService {
         this.paymentRepository = paymentRepository;
     }
 
-    // ✅ CREATE ORDER
+    // CREATE RAZORPAY ORDER
     public String createOrder(double amount) throws Exception {
 
         RazorpayClient client = new RazorpayClient(key, secret);
 
         JSONObject options = new JSONObject();
-
         options.put("amount", amount * 100); // paise
         options.put("currency", "INR");
 
-        Order order = client.orders.create(options);
+        Order razorpayOrder = client.orders.create(options);
 
-        // SAVE IN DB
         Payment payment = new Payment();
 
-        payment.setOrderId(order.get("id"));
+        payment.setRazorpayOrderId(
+                razorpayOrder.get("id").toString()
+        );
+
         payment.setAmount(amount);
         payment.setStatus("CREATED");
 
         paymentRepository.save(payment);
 
-        return order.toString();
+        return razorpayOrder.toString();
     }
 
-    // ✅ VERIFY PAYMENT
-    public String verifyPayment(String orderId,
-                                String paymentId,
-                                String razorpaySignature) throws Exception {
+    // VERIFY PAYMENT
+    public String verifyPayment(
+            String orderId,
+            String paymentId,
+            String razorpaySignature
+    ) throws Exception {
 
         JSONObject options = new JSONObject();
 
@@ -60,13 +62,13 @@ public class PaymentService {
         options.put("razorpay_payment_id", paymentId);
         options.put("razorpay_signature", razorpaySignature);
 
-        // VERIFY SIGNATURE
         boolean isValid =
                 Utils.verifyPaymentSignature(options, secret);
 
-        Payment payment = paymentRepository.findByOrderId(orderId)
+        Payment payment = paymentRepository
+                .findByRazorpayOrderId(orderId)
                 .orElseThrow(() ->
-                        new RuntimeException("Order not found"));
+                        new RuntimeException("Payment not found"));
 
         if (isValid) {
 
@@ -79,7 +81,6 @@ public class PaymentService {
         }
 
         payment.setStatus("FAILED");
-
         paymentRepository.save(payment);
 
         throw new RuntimeException("Invalid payment signature");

@@ -2,6 +2,8 @@ package com.crochet.crochetstore.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class Payment {
 
@@ -9,7 +11,12 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String orderId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @Column(unique = true)
+    private String razorpayOrderId;
 
     private String paymentId;
 
@@ -17,18 +24,26 @@ public class Payment {
 
     private Double amount;
 
-    // ✅ GETTERS & SETTERS
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public Long getId() {
         return id;
     }
 
-    public String getOrderId() {
-        return orderId;
+    public Order getOrder() {
+        return order;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public String getRazorpayOrderId() {
+        return razorpayOrderId;
+    }
+
+    public void setRazorpayOrderId(String razorpayOrderId) {
+        this.razorpayOrderId = razorpayOrderId;
     }
 
     public String getPaymentId() {
@@ -53,5 +68,13 @@ public class Payment {
 
     public void setAmount(Double amount) {
         this.amount = amount;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
