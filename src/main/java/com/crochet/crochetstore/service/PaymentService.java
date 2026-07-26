@@ -30,14 +30,15 @@ public class PaymentService {
         RazorpayClient client = new RazorpayClient(key, secret);
 
         JSONObject options = new JSONObject();
-        options.put("amount", amount * 100); // paise
+        options.put("amount", amount * 100);
         options.put("currency", "INR");
 
         Order razorpayOrder = client.orders.create(options);
 
         Payment payment = new Payment();
 
-        payment.setRazorpayOrderId(
+        // OLD FIELD
+        payment.setOrderId(
                 razorpayOrder.get("id").toString()
         );
 
@@ -66,7 +67,7 @@ public class PaymentService {
                 Utils.verifyPaymentSignature(options, secret);
 
         Payment payment = paymentRepository
-                .findByRazorpayOrderId(orderId)
+                .findByOrderId(orderId)
                 .orElseThrow(() ->
                         new RuntimeException("Payment not found"));
 
