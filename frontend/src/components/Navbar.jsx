@@ -1,14 +1,22 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { HiOutlineShoppingBag, HiOutlineUser, HiOutlineMenu, HiOutlineX, HiOutlineSearch } from 'react-icons/hi'
+import {
+  HiOutlineShoppingBag,
+  HiOutlineUser,
+  HiOutlineMenu,
+  HiOutlineX,
+  HiOutlineSearch,
+  HiOutlineHeart,
+} from 'react-icons/hi'
 import { logout } from '../store/slices/authSlice'
-import { HiOutlineShoppingBag, HiOutlineUser, HiOutlineMenu, HiOutlineX, HiOutlineSearch } from 'react-icons/hi'
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const { user } = useSelector((state) => state.auth)
   const { items } = useSelector((state) => state.cart)
+  const { items: wishlistItems } = useSelector((state) => state.wishlist)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -36,7 +44,9 @@ export default function Navbar() {
             <div className="w-9 h-9 bg-hotpink-100 rounded-full flex items-center justify-center border-2 border-hotpink-300">
               <span className="text-hotpink-600 text-lg">🧶</span>
             </div>
-            <span className="font-serif text-2xl font-bold text-hotpink-600 hidden sm:block">Knotify</span>
+            <span className="font-serif text-2xl font-bold text-hotpink-600 hidden sm:block">
+              Knotify
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -44,22 +54,27 @@ export default function Navbar() {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `text-sm font-semibold transition-colors ${isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'}`
+                `text-sm font-semibold transition-colors ${
+                  isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'
+                }`
               }
             >
               Home
             </NavLink>
-            
+
             {/* Category Dropdown */}
             <div className="relative group">
               <NavLink
                 to="/products"
                 className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'}`
+                  `text-sm font-semibold transition-colors ${
+                    isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'
+                  }`
                 }
               >
                 Shop
               </NavLink>
+
               <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border-2 border-pink-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 <Link
                   to="/products"
@@ -67,10 +82,11 @@ export default function Navbar() {
                 >
                   All Products
                 </Link>
+
                 {categories.map((cat) => (
                   <Link
                     key={cat}
-                    to={`/products?category=${cat}`}
+                    to={`/products?category=${encodeURIComponent(cat)}`}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-hotpink-50 hover:text-hotpink-500 font-medium"
                   >
                     {cat}
@@ -83,7 +99,9 @@ export default function Navbar() {
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'}`
+                  `text-sm font-semibold transition-colors ${
+                    isActive ? 'text-hotpink-500' : 'text-gray-700 hover:text-hotpink-400'
+                  }`
                 }
               >
                 Admin
@@ -109,6 +127,20 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                {/* Wishlist */}
+                <Link
+                  to="/wishlist"
+                  className="relative p-2 rounded-full hover:bg-hotpink-50 transition-colors"
+                >
+                  <HiOutlineHeart className="w-5 h-5 text-hotpink-500" />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Cart */}
                 <Link to="/cart" className="relative p-2 rounded-full hover:bg-hotpink-50 transition-colors">
                   <HiOutlineShoppingBag className="w-5 h-5 text-hotpink-500" />
                   {items.length > 0 && (
@@ -117,13 +149,26 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
+
                 <div className="relative group">
                   <button className="flex items-center gap-2 p-2 rounded-full hover:bg-hotpink-50 transition-colors">
                     <HiOutlineUser className="w-5 h-5 text-hotpink-500" />
-                    <span className="hidden lg:block text-sm font-medium text-gray-700">{user.username}</span>
+                    <span className="hidden lg:block text-sm font-medium text-gray-700">
+                      {user.username}
+                    </span>
                   </button>
+
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border-2 border-pink-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-hotpink-50 hover:text-hotpink-500 font-medium">
+                    <Link
+                      to="/wishlist"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-hotpink-50 hover:text-hotpink-500 font-medium"
+                    >
+                      My Wishlist
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-hotpink-50 hover:text-hotpink-500 font-medium"
+                    >
                       My Orders
                     </Link>
                     <button
@@ -168,22 +213,33 @@ export default function Navbar() {
                 <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
             </form>
+
             <Link to="/" onClick={() => setIsOpen(false)} className="block py-2 text-gray-600 hover:text-peach-500">
               Home
             </Link>
             <Link to="/products" onClick={() => setIsOpen(false)} className="block py-2 text-gray-600 hover:text-peach-500">
               Shop
             </Link>
+
+            <Link
+              to="/wishlist"
+              onClick={() => setIsOpen(false)}
+              className="block py-2 text-gray-600 hover:text-peach-500"
+            >
+              Wishlist
+            </Link>
+
             {categories.map((cat) => (
               <Link
                 key={cat}
-                to={`/products?category=${cat}`}
+                to={`/products?category=${encodeURIComponent(cat)}`}
                 onClick={() => setIsOpen(false)}
                 className="block py-2 pl-4 text-sm text-gray-500 hover:text-peach-500"
               >
                 {cat}
               </Link>
             ))}
+
             {user?.role === 'ADMIN' && (
               <Link to="/admin" onClick={() => setIsOpen(false)} className="block py-2 text-gray-600 hover:text-peach-500">
                 Admin Panel
