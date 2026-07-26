@@ -10,6 +10,7 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../store/slices/wishlistSlice";
+import { addToCart } from "../store/slices/cartSlice";
 import toast from "react-hot-toast";
 
 const FALLBACK_IMAGE =
@@ -61,6 +62,23 @@ export default function ProductCard({ product }) {
       toast.success("Added to wishlist ❤️");
     }
   };
+  const handleAddToCart = (e) => {
+  e.preventDefault();
+
+  if (!user) {
+    toast.error("Please login first");
+    return;
+  }
+
+  dispatch(
+    addToCart({
+      productId: product.id,
+      quantity: 1,
+    })
+  );
+
+  toast.success("Added to cart 🛍️");
+};
 
   return (
     <Link
@@ -119,7 +137,7 @@ export default function ProductCard({ product }) {
           {/* Quick Add */}
           {!isOutOfStock && (
             <button
-              onClick={(e) => e.preventDefault()}
+              onClick={handleAddToCart}
               className="absolute bottom-3 right-3 w-11 h-11 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-hotpink-500 hover:text-white"
             >
               <HiOutlineShoppingBag className="w-5 h-5" />

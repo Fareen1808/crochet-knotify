@@ -1,6 +1,8 @@
 package com.crochet.crochetstore.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,7 @@ public class Wishlist {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<WishlistItem> items = new ArrayList<>();
 
     public Long getId() {
