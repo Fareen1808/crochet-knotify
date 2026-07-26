@@ -2,7 +2,6 @@ package com.crochet.crochetstore.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 
 @Entity
 public class Payment {
@@ -23,8 +22,6 @@ public class Payment {
     private String status;
 
     private Double amount;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
 
     public Long getId() {
         return id;
@@ -70,11 +67,4 @@ public class Payment {
         this.amount = amount;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

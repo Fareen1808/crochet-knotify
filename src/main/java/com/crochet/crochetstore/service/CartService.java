@@ -83,12 +83,20 @@ return cartRepository.save(cart);
     }
 
     // ✅ REMOVE ITEM
-    public String removeItem(Long cartItemId) {
+    public String removeItem(Long cartItemId, String username) {
 
-        cartItemRepository.deleteById(cartItemId);
+    CartItem item = cartItemRepository.findById(cartItemId)
+            .orElseThrow(() ->
+                    new RuntimeException("Cart item not found"));
 
-        return "Item removed from cart";
+    if (!item.getCart().getUsername().equals(username)) {
+        throw new RuntimeException("You are not allowed to remove this cart item.");
     }
+
+    cartItemRepository.delete(item);
+
+    return "Item removed from cart";
+}
 
     // ✅ CALCULATE TOTAL
     public double calculateTotal(String username) {

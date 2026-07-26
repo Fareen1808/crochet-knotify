@@ -43,10 +43,15 @@ public class CartController {
 
     // REMOVE ITEM
     @DeleteMapping("/remove/{cartItemId}")
-    public String removeItem(@PathVariable Long cartItemId) {
+public String removeItem(
+        @PathVariable Long cartItemId,
+        Authentication authentication
+) {
 
-        return cartService.removeItem(cartItemId);
-    }
+    String username = authentication.getName();
+
+    return cartService.removeItem(cartItemId, username);
+}
 
     // CART TOTAL
     @GetMapping("/total")
