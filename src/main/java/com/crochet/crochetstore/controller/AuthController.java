@@ -1,8 +1,10 @@
 package com.crochet.crochetstore.controller;
 
 import com.crochet.crochetstore.service.AuthService;
+import com.crochet.crochetstore.dto.LoginRequest;
 import com.crochet.crochetstore.dto.RegisterRequest;
 import com.crochet.crochetstore.dto.TokenResponse;
+import com.crochet.crochetstore.dto.RefreshTokenRequest;
 
 import jakarta.validation.Valid;
 
@@ -30,19 +32,30 @@ public ResponseEntity<?> register(
 }
 
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password) {
-        return authService.login(username, password);
-    }
+public String login(@Valid @RequestBody LoginRequest request) {
+
+    return authService.login(
+            request.getUsername(),
+            request.getPassword()
+    );
+}
 
     @PostMapping("/login/tokens")
-    public TokenResponse loginWithRefreshToken(@RequestParam String username,
-                                               @RequestParam String password) {
-        return authService.loginWithRefreshToken(username, password);
-    }
+public TokenResponse loginWithRefreshToken(
+        @Valid @RequestBody LoginRequest request) {
+
+    return authService.loginWithRefreshToken(
+            request.getUsername(),
+            request.getPassword()
+    );
+}
 
     @PostMapping("/refresh")
-    public TokenResponse refresh(@RequestParam String refreshToken) {
-        return authService.refresh(refreshToken);
-    }
+public TokenResponse refresh(
+        @Valid @RequestBody RefreshTokenRequest request) {
+
+    return authService.refresh(
+            request.getRefreshToken()
+    );
+}
 }

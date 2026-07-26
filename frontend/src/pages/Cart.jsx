@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState'
 import { CartItemSkeleton } from '../components/LoadingSkeleton'
 import toast from 'react-hot-toast'
 import { HiOutlineTrash, HiOutlineArrowLeft } from 'react-icons/hi'
+import { fetchWishlist } from "../store/slices/wishlistSlice";
 
 export default function Cart() {
   const dispatch = useDispatch()
@@ -18,6 +19,7 @@ export default function Cart() {
     if (user) {
       dispatch(fetchCart())
       dispatch(fetchCartTotal())
+      dispatch(fetchWishlist())
     }
   }, [dispatch, user])
 

@@ -25,23 +25,24 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                   HttpServletResponse response,
-                                   FilterChain filterChain)
-            throws ServletException, IOException {
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain)
+        throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+    String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+    if (header != null && header.startsWith("Bearer ")) {
 
-            String token = header.substring(7);
+        String token = header.substring(7);
+
+        try {
 
             if (jwtUtil.validateToken(token)) {
 
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
 
-                // 🔥 Create authentication object
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 username,
@@ -51,17 +52,28 @@ public class JwtFilter extends OncePerRequestFilter {
                                 )
                         );
 
-                // 🔥 Set user in Spring Security context
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
-            } else {
-                writeUnauthorizedResponse(response, "Invalid, expired, or malformed token");
-                return;
             }
-        }
 
-        filterChain.doFilter(request, response);
+        } catch (Exception e) {
+
+            SecurityContextHolder.clearContext();
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                  "status":401,
+                  "error":"Unauthorized",
+                  "message":"Access token expired"
+                }
+                """);
+            return;
+        }
     }
+
+    filterChain.doFilter(request, response);
+}
 
     private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

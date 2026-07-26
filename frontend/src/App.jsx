@@ -16,6 +16,12 @@ import AdminProducts from './pages/admin/AdminProducts'
 import AdminOrders from './pages/admin/AdminOrders'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
+import Wishlist from "./pages/Wishlist";
+import ScrollToTop from "./components/ScrollToTop";
+import ShippingInfo from "./pages/ShippingInfo";
+import Returns from "./pages/Returns";
+import CareInstructions from "./pages/CareInstructions";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -26,6 +32,14 @@ function App() {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/shipping" element={<ShippingInfo />} />
+
+<Route path="/returns" element={<Returns />} />
+
+<Route path="/care" element={<CareInstructions />} />
+
+<Route path="/contact" element={<Contact />} />
         <Route
           path="/cart"
           element={

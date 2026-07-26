@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { HiOutlineHeart } from 'react-icons/hi'
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -32,10 +33,30 @@ export default function Footer() {
           <div>
             <h4 className="font-medium text-gray-800 mb-4">Help</h4>
             <ul className="space-y-2">
-              <li><span className="text-sm text-gray-500">Shipping Info</span></li>
-              <li><span className="text-sm text-gray-500">Returns & Exchanges</span></li>
-              <li><span className="text-sm text-gray-500">Care Instructions</span></li>
-              <li><span className="text-sm text-gray-500">Contact Us</span></li>
+              <Link
+    to="/shipping"
+    className="hover:text-hotpink-500 transition-colors"
+>
+    Shipping Info
+</Link>
+              <Link
+    to="/returns"
+    className="hover:text-hotpink-500 transition-colors"
+>
+    Returns & Exchanges
+</Link>
+              <Link
+    to="/care"
+    className="hover:text-hotpink-500 transition-colors"
+>
+    Care Instructions
+</Link>
+              <Link
+    to="/contact"
+    className="hover:text-hotpink-500 transition-colors"
+>
+    Contact Us
+</Link>
             </ul>
           </div>
 
@@ -58,7 +79,7 @@ export default function Footer() {
 
         <div className="border-t border-peach-100 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-400">
-            © 2024 Knotify. All rights reserved.
+            © 2026 Knotify. All rights reserved.
           </p>
           <p className="text-sm text-gray-400 flex items-center gap-1">
             Made with <HiOutlineHeart className="w-4 h-4 text-hotpink-400" /> and lots of yarn
