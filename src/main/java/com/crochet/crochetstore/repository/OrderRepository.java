@@ -8,9 +8,16 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @EntityGraph(attributePaths = {"items","items.product"})
+    // Customer order history
+    @EntityGraph(attributePaths = {"items", "items.product"})
     List<Order> findByUsername(String username);
 
-    @EntityGraph(attributePaths = {"items","items.product"})
+    // Admin - fetch all orders with items and products
+    @Override
+    @EntityGraph(attributePaths = {"items", "items.product"})
     List<Order> findAll();
+
+    // Latest order of a user
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    Order findTopByUsernameOrderByIdDesc(String username);
 }
