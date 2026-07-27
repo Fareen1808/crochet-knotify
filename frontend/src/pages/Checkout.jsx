@@ -200,22 +200,25 @@ export default function Checkout() {
         return
       }
 
-      const razorpayOrderId = await paymentService.createOrder(total)
-
+      const order = JSON.parse(await paymentService.createOrder(total))
+      console.log("Order from backend:", order)
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: total * 100,
         currency: 'INR',
         name: 'Knotify',
         description: 'Handcrafted Crochet Purchase',
-        order_id: razorpayOrderId,
+        order_id: order.id,
         handler: async (response) => {
-          try {
-            await paymentService.verifyPayment(
-              response.razorpay_order_id,
-              response.razorpay_payment_id,
-              response.razorpay_signature
-            )
+
+  console.log("Razorpay response:", response);
+
+  try {
+    await paymentService.verifyPayment(
+      response.razorpay_order_id,
+      response.razorpay_payment_id,
+      response.razorpay_signature
+    )
 
             await orderService.checkout()
 
