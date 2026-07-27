@@ -52,9 +52,9 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
-    }
+public String getAllOrders() {
+    return "Hello";
+}
 
     @GetMapping("/orders/{username}")
     public List<Order> getOrdersByUsername(
