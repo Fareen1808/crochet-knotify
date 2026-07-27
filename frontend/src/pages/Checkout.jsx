@@ -24,7 +24,6 @@ export default function Checkout() {
     state: '',
   })
 
-  // Track which fields have been touched, so we don't show errors before the user interacts
   const [touched, setTouched] = useState({
     fullName: false,
     phone: false,
@@ -32,7 +31,6 @@ export default function Checkout() {
     pincode: false,
   })
 
-  // Field-level error messages
   const [errors, setErrors] = useState({
     fullName: '',
     phone: '',
@@ -46,7 +44,6 @@ export default function Checkout() {
     }
   }, [dispatch, user])
 
-  // Validate a single field and return an error message (empty string = valid)
   const validateField = (name, value) => {
     switch (name) {
       case 'fullName':
@@ -70,7 +67,6 @@ export default function Checkout() {
     }
   }
 
-  // Auto-fetch city/state whenever pincode changes and is 6 digits
   useEffect(() => {
     if (address.pincode.length !== 6) {
       setAddress((prev) => ({
@@ -143,7 +139,6 @@ export default function Checkout() {
       [name]: value,
     }))
 
-    // Live-validate as the user types, but only surface it if the field was already touched
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }))
     }
@@ -166,12 +161,13 @@ export default function Checkout() {
   }
 
   const handlePayment = async () => {
-    // Validate every field at once and mark all as touched so errors render
     const fieldNames = ['fullName', 'phone', 'street', 'pincode']
     const newErrors = {}
+
     fieldNames.forEach((name) => {
       newErrors[name] = validateField(name, address[name])
     })
+
     setErrors((prev) => ({ ...prev, ...newErrors }))
     setTouched((prev) => {
       const next = { ...prev }
@@ -196,12 +192,12 @@ export default function Checkout() {
       const scriptLoaded = await loadRazorpayScript()
       if (!scriptLoaded) {
         toast.error('Failed to load payment gateway')
-        setIsProcessing(false)
         return
       }
 
-      const order = JSON.parse(await paymentService.createOrder(total))
-      console.log("Order from backend:", order)
+      const raw = await paymentService.createOrder(total)
+      const order = typeof raw === 'string' ? JSON.parse(raw) : raw
+
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: total * 100,
@@ -210,15 +206,12 @@ export default function Checkout() {
         description: 'Handcrafted Crochet Purchase',
         order_id: order.id,
         handler: async (response) => {
-
-  console.log("Razorpay response:", response);
-
-  try {
-    await paymentService.verifyPayment(
-      response.razorpay_order_id,
-      response.razorpay_payment_id,
-      response.razorpay_signature
-    )
+          try {
+            await paymentService.verifyPayment(
+              response.razorpay_order_id,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            )
 
             await orderService.checkout()
 
@@ -226,6 +219,7 @@ export default function Checkout() {
             toast.success('Order placed successfully! 🎉')
             navigate('/payment-success')
           } catch (error) {
+            console.error('Payment verification failed:', error)
             toast.error('Payment verification failed')
             navigate('/payment-failure')
           }
@@ -238,30 +232,17 @@ export default function Checkout() {
           color: '#ffa080',
         },
       }
-const order = JSON.parse(await paymentService.createOrder(total));
 
-console.log("Order from backend:", order);
-console.log("Razorpay Key:", import.meta.env.VITE_RAZORPAY_KEY_ID);
-console.log("window.Razorpay:", window.Razorpay);
-    
-      console.log("Options:", options);
-
-const razorpay = new window.Razorpay(options);
-console.log("Created Razorpay instance");
-
-razorpay.open();
-    
-    }catch (error) {
-  console.error("Payment initiation error:", error);
-  console.error("Response:", error?.response);
-  console.error("Response data:", error?.response?.data);
-  console.error("Message:", error?.message);
-
-  toast.error("Payment initiation failed");
-}
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
+    } catch (error) {
+      console.error('Payment initiation error:', error)
+      toast.error('Payment initiation failed')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
-  // Helper to build input classes based on error state
   const inputClass = (name) =>
     `input-field ${
       touched[name] && errors[name]
@@ -330,7 +311,6 @@ razorpay.open();
                 )}
               </div>
 
-              {/* Pincode now comes first, so entering it auto-fills City/State below */}
               <div>
                 <label className="block text-sm text-gray-600 mb-1.5">Pincode</label>
                 <input
