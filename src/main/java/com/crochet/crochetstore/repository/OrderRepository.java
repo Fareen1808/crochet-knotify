@@ -5,19 +5,20 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    // Customer order history
     @EntityGraph(attributePaths = {"items", "items.product"})
     List<Order> findByUsername(String username);
 
-    // Admin - fetch all orders with items and products
-    @Override
     @EntityGraph(attributePaths = {"items", "items.product"})
-    List<Order> findAll();
+    Optional<Order> findTopByUsernameAndPaymentStatusOrderByIdDesc(
+            String username,
+            String paymentStatus
+    );
 
-    // Latest order of a user
-    @EntityGraph(attributePaths = {"items", "items.product"})
-    Order findTopByUsernameOrderByIdDesc(String username);
+    long count();
+
+    List<Order> findAll();
 }

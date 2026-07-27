@@ -4,7 +4,6 @@ import com.crochet.crochetstore.model.Order;
 import com.crochet.crochetstore.model.Payment;
 import com.crochet.crochetstore.repository.OrderRepository;
 import com.crochet.crochetstore.repository.PaymentRepository;
-
 import com.razorpay.RazorpayClient;
 import com.razorpay.Utils;
 import org.json.JSONObject;
@@ -40,10 +39,10 @@ public class PaymentService {
         options.put("amount", amount * 100);
         options.put("currency", "INR");
 
+        // IMPORTANT: Use fully-qualified Razorpay Order class
         com.razorpay.Order razorpayOrder = client.orders.create(options);
 
         Payment payment = new Payment();
-
         payment.setOrderId(razorpayOrder.get("id").toString());
         payment.setAmount(amount);
         payment.setStatus("CREATED");
@@ -55,6 +54,7 @@ public class PaymentService {
 
     // VERIFY PAYMENT
     public String verifyPayment(
+            String username,
             String orderId,
             String paymentId,
             String razorpaySignature
@@ -66,36 +66,38 @@ public class PaymentService {
         options.put("razorpay_payment_id", paymentId);
         options.put("razorpay_signature", razorpaySignature);
 
-        boolean isValid =
-                Utils.verifyPaymentSignature(options, secret);
+        boolean isValid = Utils.verifyPaymentSignature(options, secret);
 
         Payment payment = paymentRepository
                 .findByOrderId(orderId)
                 .orElseThrow(() ->
                         new RuntimeException("Payment not found"));
 
-        if (isValid) {
+        if (!isValid) {
 
-            payment.setPaymentId(paymentId);
-            payment.setStatus("SUCCESS");
-
+            payment.setStatus("FAILED");
             paymentRepository.save(payment);
 
-            // TEMPORARY: Update latest order of this user
-            Order order =
-                    orderRepository.findTopByUsernameOrderByIdDesc("bshbhbdh");
-
-            if (order != null) {
-                order.setPaymentStatus("PAID");
-                orderRepository.save(order);
-            }
-
-            return "Payment verified successfully";
+            throw new RuntimeException("Invalid payment signature");
         }
 
-        payment.setStatus("FAILED");
+        // Update Payment table
+        payment.setPaymentId(paymentId);
+        payment.setStatus("SUCCESS");
         paymentRepository.save(payment);
 
-        throw new RuntimeException("Invalid payment signature");
+        // Update latest pending order
+        Order order = orderRepository
+                .findTopByUsernameAndPaymentStatusOrderByIdDesc(
+                        username,
+                        "PENDING"
+                )
+                .orElseThrow(() ->
+                        new RuntimeException("Pending order not found"));
+
+        order.setPaymentStatus("PAID");
+        orderRepository.save(order);
+
+        return "Payment verified successfully";
     }
 }
