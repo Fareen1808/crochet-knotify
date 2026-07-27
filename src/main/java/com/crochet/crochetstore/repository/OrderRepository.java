@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
+    @Override
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    List<Order> findAll();
+
     @EntityGraph(attributePaths = {"items", "items.product"})
     List<Order> findByUsername(String username);
 
@@ -17,8 +21,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             String username,
             String paymentStatus
     );
-
-    long count();
-
-    List<Order> findAll();
 }

@@ -53,7 +53,13 @@ public class AdminController {
 
     @GetMapping("/orders")
 public List<Order> getAllOrders() {
-    return orderRepository.findAll();
+
+    List<Order> orders = orderRepository.findAll();
+
+    System.out.println("========== ADMIN ORDERS ==========");
+    System.out.println("Orders found: " + orders.size());
+
+    return orders;
 }
 
     @GetMapping("/orders/{username}")

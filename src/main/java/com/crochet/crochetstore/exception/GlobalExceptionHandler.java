@@ -68,12 +68,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({IllegalArgumentException.class, RuntimeException.class})
-    public ResponseEntity<Map<String, Object>> handleBadRequest(
-            RuntimeException ex,
-            HttpServletRequest request) {
+public ResponseEntity<Map<String, Object>> handleBadRequest(
+        RuntimeException ex,
+        HttpServletRequest request) {
 
-        return error(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
-    }
+    ex.printStackTrace();
+
+    return error(
+            HttpStatus.BAD_REQUEST,
+            ex.getMessage(),
+            request
+    );
+}
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(
