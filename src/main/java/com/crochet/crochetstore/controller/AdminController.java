@@ -52,8 +52,8 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-public String getAllOrders() {
-    return "Hello";
+public List<Order> getAllOrders() {
+    return orderRepository.findAll();
 }
 
     @GetMapping("/orders/{username}")
