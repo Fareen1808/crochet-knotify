@@ -2,6 +2,7 @@ package com.crochet.crochetstore.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +18,22 @@ public class Order {
 
     private Double totalAmount;
 
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status")
+    private OrderStatus paymentStatus = OrderStatus.PENDING;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "order",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     // GETTERS & SETTERS
 
@@ -46,12 +57,20 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public String getPaymentStatus() {
+    public OrderStatus getPaymentStatus() {
         return paymentStatus;
     }
 
-    public void setPaymentStatus(String paymentStatus) {
+    public void setPaymentStatus(OrderStatus paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public List<OrderItem> getItems() {

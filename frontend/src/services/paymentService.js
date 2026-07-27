@@ -1,15 +1,15 @@
 import API from './api'
 
 const paymentService = {
-  createOrder: async (amount) => {
-    const response = await API.post(`/payment/create-order?amount=${amount}`)
-    return response.data
-  },
-
-  verifyPayment: async (orderId, paymentId, signature) => {
-    const response = await API.post(
-      `/payment/verify?orderId=${encodeURIComponent(orderId)}&paymentId=${encodeURIComponent(paymentId)}&signature=${encodeURIComponent(signature)}`
-    )
+  // Step 2 of checkout: sent only AFTER Razorpay's own checkout widget
+  // reports success. The backend re-verifies everything server-side -
+  // this call carries proof of payment, not a request to create one.
+  verifyPayment: async ({ razorpayOrderId, razorpayPaymentId, razorpaySignature }) => {
+    const response = await API.post('/payment/verify', {
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    })
     return response.data
   },
 }
