@@ -251,9 +251,13 @@ console.log("Created Razorpay instance");
 
 razorpay.open();
     
-    } catch (error) {
+    }catch (error) {
   console.error("Payment initiation error:", error);
-  toast.error(error?.message || "Payment initiation failed");
+  console.error("Response:", error?.response);
+  console.error("Response data:", error?.response?.data);
+  console.error("Message:", error?.message);
+
+  toast.error("Payment initiation failed");
 }
   }
 
