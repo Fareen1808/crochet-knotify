@@ -108,11 +108,13 @@ export default function Orders() {
             <div className="space-y-2 mb-4">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 py-2 border-b border-peach-50 last:border-0">
-                  <div className="w-10 h-10 bg-gradient-to-br from-peach-100 to-peach-200 rounded-lg flex items-center justify-center shrink-0">
-                    <span className="text-sm">🧶</span>
-                  </div>
+                  <img
+  src={item.product?.imageUrl}
+  alt={item.product?.name}
+  className="w-10 h-10 rounded-lg object-cover shrink-0"
+/>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{item.productName || 'Crochet Item'}</p>
+                    <p className="text-sm text-gray-700 truncate">{item.product?.name || 'Crochet Item'}</p>
                     <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
                   </div>
                   <span className="text-sm font-medium text-gray-700">

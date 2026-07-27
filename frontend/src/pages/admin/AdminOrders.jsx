@@ -1,111 +1,224 @@
-import { useState } from 'react'
-import { formatPrice } from '../../utils/formatPrice'
-import { HiOutlineSearch } from 'react-icons/hi'
-import orderService from '../../services/orderService'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { HiOutlineSearch } from 'react-icons/hi'
+import { formatPrice } from '../../utils/formatPrice'
+import adminService from '../../services/adminService'
 
 export default function AdminOrders() {
-  const [username, setUsername] = useState('')
-  const [orders, setOrders] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [searched, setSearched] = useState(false)
 
-  const handleSearch = async (e) => {
-    e.preventDefault()
-    if (!username.trim()) {
-      toast.error('Please enter a username')
-      return
-    }
-    setIsLoading(true)
+  const [orders, setOrders] = useState([])
+  const [username, setUsername] = useState('')
+  const [searched, setSearched] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    loadAllOrders()
+  }, [])
+
+  const loadAllOrders = async () => {
     try {
-      const data = await orderService.getOrders(username.trim())
+      const data = await adminService.getOrders()
       setOrders(data)
-      setSearched(true)
     } catch {
-      toast.error('Failed to fetch orders')
-    } finally {
-      setIsLoading(false)
+      toast.error('Failed to load orders')
     }
   }
 
-  const getStatusBadge = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'paid':
-      case 'completed':
-        return 'bg-sage-100 text-sage-600'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-600'
-      case 'failed':
-        return 'bg-red-100 text-red-600'
-      default:
-        return 'bg-gray-100 text-gray-600'
+  const handleSearch = async (e) => {
+
+    e.preventDefault()
+
+    if (!username.trim()) {
+      loadAllOrders()
+      return
     }
+
+    setIsLoading(true)
+
+    try {
+
+      const data =
+        await adminService.getOrdersByUsername(username)
+
+      setOrders(data)
+
+      setSearched(true)
+
+    } catch {
+
+      toast.error('Failed to fetch orders')
+
+    } finally {
+
+      setIsLoading(false)
+
+    }
+
+  }
+
+  const badge = (status) => {
+
+    switch (status?.toUpperCase()) {
+
+      case 'PAID':
+        return 'bg-green-100 text-green-700'
+
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-700'
+
+      case 'FAILED':
+        return 'bg-red-100 text-red-700'
+
+      default:
+        return 'bg-gray-100 text-gray-700'
+
+    }
+
   }
 
   return (
+
     <div>
+
       <div className="mb-8">
-        <h1 className="font-serif text-3xl text-gray-800">Orders</h1>
-        <p className="text-gray-500 mt-1">View customer orders by username</p>
+
+        <h1 className="font-serif text-3xl">
+          Orders
+        </h1>
+
+        <p className="text-gray-500">
+          Manage customer orders
+        </p>
+
       </div>
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-3 mb-8">
+      <form
+        onSubmit={handleSearch}
+        className="flex gap-3 mb-8"
+      >
+
         <div className="relative flex-1 max-w-md">
+
           <input
-            type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter customer username..."
+            onChange={(e)=>setUsername(e.target.value)}
+            placeholder="Search username..."
             className="input-field pl-10"
           />
-          <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+
+          <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2"/>
+
         </div>
-        <button type="submit" className="btn-primary" disabled={isLoading}>
-          {isLoading ? 'Searching...' : 'Search'}
+
+        <button
+          className="btn-primary"
+          disabled={isLoading}
+        >
+          Search
         </button>
+
       </form>
 
-      {/* Orders List */}
-      {searched && orders.length === 0 && (
-        <div className="card text-center py-12">
-          <span className="text-4xl mb-3 block">📭</span>
-          <p className="text-gray-500">No orders found for "{username}"</p>
+      {searched && orders.length===0 && (
+
+        <div className="card text-center py-10">
+
+          No orders found.
+
         </div>
+
       )}
 
-      {orders.length > 0 && (
-        <div className="card overflow-hidden p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-peach-50 border-b border-peach-100">
-                <tr>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Order ID</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Customer</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Items</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Total</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-peach-50">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-peach-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">#{order.id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{order.username}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{order.items?.length || 0} items</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{formatPrice(order.totalAmount)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`badge ${getStatusBadge(order.paymentStatus)}`}>
-                        {order.paymentStatus || 'Pending'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="space-y-6">
+
+        {orders.map(order=>(
+
+          <div
+            key={order.id}
+            className="card"
+          >
+
+            <div className="flex justify-between mb-4">
+
+              <div>
+
+                <h3 className="font-semibold">
+
+                  Order #{order.id}
+
+                </h3>
+
+                <p className="text-sm text-gray-500">
+
+                  {order.username}
+
+                </p>
+
+              </div>
+
+              <span className={`badge ${badge(order.paymentStatus)}`}>
+
+                {order.paymentStatus}
+
+              </span>
+
+            </div>
+
+            <div className="space-y-2">
+
+              {order.items?.map(item=>(
+
+                <div
+                  key={item.id}
+                  className="flex justify-between border-b py-2"
+                >
+
+                  <div>
+
+                    <p>
+
+                      {item.product?.name}
+
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+
+                      Qty : {item.quantity}
+
+                    </p>
+
+                  </div>
+
+                  <div>
+
+                    {formatPrice(item.price*item.quantity)}
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+            <div className="flex justify-end mt-4">
+
+              <strong>
+
+                {formatPrice(order.totalAmount)}
+
+              </strong>
+
+            </div>
+
           </div>
-        </div>
-      )}
+
+        ))}
+
+      </div>
+
     </div>
+
   )
+
 }

@@ -62,6 +62,9 @@ public class SecurityConfig {
                         .requestMatchers("/products/admin/**")
                         .hasRole("ADMIN")
 
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
+
                         // =====================================
                         // PUBLIC APIs
                         // =====================================
