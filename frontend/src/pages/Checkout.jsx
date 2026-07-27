@@ -238,14 +238,23 @@ export default function Checkout() {
           color: '#ffa080',
         },
       }
+const order = JSON.parse(await paymentService.createOrder(total));
 
-      const razorpay = new window.Razorpay(options)
-      razorpay.open()
+console.log("Order from backend:", order);
+console.log("Razorpay Key:", import.meta.env.VITE_RAZORPAY_KEY_ID);
+console.log("window.Razorpay:", window.Razorpay);
+    
+      console.log("Options:", options);
+
+const razorpay = new window.Razorpay(options);
+console.log("Created Razorpay instance");
+
+razorpay.open();
+    
     } catch (error) {
-      toast.error('Payment initiation failed')
-    } finally {
-      setIsProcessing(false)
-    }
+  console.error("Payment initiation error:", error);
+  toast.error(error?.message || "Payment initiation failed");
+}
   }
 
   // Helper to build input classes based on error state
